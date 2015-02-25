@@ -1,0 +1,109 @@
+﻿using System;
+using System.Collections.Generic;
+using MySql.Data.MySqlClient;
+
+namespace DMPDistributedDBBackend
+{
+    public class DatabaseConnection : IDisposable
+    {
+        private BackendSettings settings;
+
+        public DatabaseConnection(BackendSettings settings)
+        {
+            this.settings = settings;
+        }
+
+        public int ExecuteNonReader(string mySql)
+        {
+            return ExecuteNonReader(mySql, null);
+        }
+
+        public int ExecuteNonReader(string mySql, Dictionary<string,object> parameters)
+        {
+            int returnValue;
+            using (MySqlConnection connection = new MySqlConnection(settings.GetConnectionString()))
+            {
+                connection.Open();
+                using (MySqlCommand command = new MySqlCommand(mySql, connection))
+                {
+                    if (parameters != null)
+                    {
+                        foreach (KeyValuePair<string,object> kvp in parameters)
+                        {
+                            command.Parameters.AddWithValue(kvp.Key, kvp.Value);
+                        }
+                    }
+                    returnValue = command.ExecuteNonQuery();
+                }
+            }
+            return returnValue;
+        }
+
+        public T ExecuteScalar<T>(string mySql)
+        {
+            return ExecuteScalar<T>(mySql, null);
+        }
+
+        public T ExecuteScalar<T>(string mySql, Dictionary<string,object> parameters)
+        {
+            T returnValue;
+            using (MySqlConnection connection = new MySqlConnection(settings.GetConnectionString()))
+            {
+                connection.Open();
+                using (MySqlCommand command = new MySqlCommand(mySql, connection))
+                {
+                    if (parameters != null)
+                    {
+                        foreach (KeyValuePair<string,object> kvp in parameters)
+                        {
+                            command.Parameters.AddWithValue(kvp.Key, kvp.Value);
+                        }
+                    }
+                    returnValue = (T)command.ExecuteScalar();
+                }
+            }
+            return returnValue;
+        }
+
+        public object[][] ExecuteReader(string mySql)
+        {
+            return ExecuteReader(mySql, null);
+        }
+
+        public object[][] ExecuteReader(string mySql, Dictionary<string,object> parameters)
+        {
+            object[][] returnValue;
+            using (MySqlConnection connection = new MySqlConnection(settings.GetConnectionString()))
+            {
+                connection.Open();
+                using (MySqlCommand command = new MySqlCommand(mySql, connection))
+                {
+                    if (parameters != null)
+                    {
+                        foreach (KeyValuePair<string,object> kvp in parameters)
+                        {
+                            command.Parameters.AddWithValue(kvp.Key, kvp.Value);
+                        }
+                    }
+                    List<object[]> fieldData = new List<object[]>();
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            object[] fields = new object[reader.FieldCount];
+                            reader.GetValues(fields);
+                            fieldData.Add(fields);
+                        }
+                    }
+                    returnValue = fieldData.ToArray();
+                }
+            }
+            return returnValue;
+        }
+
+        public void Dispose()
+        {
+            //Dispose connection stuff here.
+        }
+    }
+}

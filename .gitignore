@@ -1,0 +1,7 @@
+*.orig
+*.dll
+*.userprefs
+DMPDistributedDBBackend/bin/*
+DMPDistributedDBBackend/obj/*
+*.suo
+*.csproj.user

@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DMPDistributedDBBackend", "DMPDistributedDBBackend\DMPDistributedDBBackend.csproj", "{E6B81C44-5AD5-4374-8240-5716E141067D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E6B81C44-5AD5-4374-8240-5716E141067D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6B81C44-5AD5-4374-8240-5716E141067D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6B81C44-5AD5-4374-8240-5716E141067D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6B81C44-5AD5-4374-8240-5716E141067D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = DMPDistributedDBBackend\DMPDistributedDBBackend.csproj
+	EndGlobalSection
+EndGlobal
