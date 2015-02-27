@@ -9,6 +9,7 @@ namespace DMPDistributedDBBackend
         private DatabaseConnection databaseConnection;
         private Dictionary<ReferenceID, string> pairMatch = new Dictionary<ReferenceID, string>();
         private Dictionary<string, TrackingObject> trackingObjects = new Dictionary<string, TrackingObject>();
+        private Dictionary<ReferenceID, ReportingMessage> connectedClients = new Dictionary<ReferenceID, ReportingMessage>();
 
         public DatabaseDriver(DatabaseConnection databaseConnection)
         {
@@ -18,12 +19,20 @@ namespace DMPDistributedDBBackend
 
         public void HandleConnect(string serverID, int clientID, string remoteAddress, int remotePort)
         {
-            //Don't care
+            ReferenceID thisReference = new ReferenceID(serverID, clientID);
+            lock (connectedClients)
+            {
+                connectedClients.Add(thisReference, null);
+            }
         }
 
         public void HandleReport(string serverID, int clientID, ReportingMessage reportMessage)
         {
             ReferenceID thisReference = new ReferenceID(serverID, clientID);
+            lock (connectedClients)
+            {
+                connectedClients[thisReference] = reportMessage;
+            }
             if (!pairMatch.ContainsKey(thisReference))
             {
                 pairMatch.Add(thisReference, reportMessage.serverHash);
@@ -42,12 +51,16 @@ namespace DMPDistributedDBBackend
         public void HandleDisconnect(string serverID, int clientID)
         {
             ReferenceID thisReference = new ReferenceID(serverID, clientID);
+            lock (connectedClients)
+            {
+                connectedClients.Remove(thisReference);
+            }
             if (pairMatch.ContainsKey(thisReference))
             {
                 string serverHash = pairMatch[thisReference];
                 TrackingObject trackingObject = trackingObjects[serverHash];
                 trackingObject.referenceCount--;
-                Console.WriteLine(serverHash + " references: " + trackingObjects[serverHash]);
+                Console.WriteLine(serverHash + " references: " + trackingObject.referenceCount);
                 if (trackingObject.referenceCount == 0)
                 {
                     SQLDisconnect(serverHash, trackingObject);
@@ -143,6 +156,7 @@ namespace DMPDistributedDBBackend
                     Console.WriteLine("WARNING: Ignoring error on report (remove player), error: " + e.Message);
                 }
             }
+            trackingObject.players = reportMessage.players;
         }
 
         private void SQLDisconnect(string serverHash, TrackingObject trackingObject)
@@ -188,6 +202,23 @@ namespace DMPDistributedDBBackend
             }
         }
 
+        public void PrintServers()
+        {
+            lock (connectedClients)
+            {
+                foreach (KeyValuePair<ReferenceID, ReportingMessage> kvp in connectedClients)
+                {
+                    if (kvp.Value == null)
+                    {
+                        Console.WriteLine("@" + kvp.Key.serverID + ":" + kvp.Key.clientID + ": CONNECTING");
+                    }
+                    else
+                    {
+                        Console.WriteLine("@" + kvp.Key.serverID + ":" + kvp.Key.clientID + " " + kvp.Value.gameAddress + ":" + kvp.Value.gamePort + ", " + kvp.Value.players.Length + " players.");
+                    }
+                }
+            }
+        }
         private struct ReferenceID
         {
             public readonly string serverID;

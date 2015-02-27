@@ -95,6 +95,11 @@ namespace DMPDistributedDBBackend
             }
         }
 
+        public void Disconnect()
+        {
+            networkClient.Disconnect();
+        }
+
         private enum MessageType
         {
             HEARTBEAT,

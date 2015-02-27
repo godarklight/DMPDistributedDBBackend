@@ -7,10 +7,96 @@ namespace DMPDistributedDBBackend
 {
     public class MainClass
     {
+        //Current clients for command printing
+        private static DatabaseClient databaseClient;
+        private static DatabaseDriver databaseDriver;
+        private static Thread mainThread;
+        private static string currentEndpoint;
+
         public static void Main()
         {
             MainClass mainClass = new MainClass();
-            mainClass.Run();
+            mainThread = new Thread(new ThreadStart(mainClass.Run));
+            mainThread.Start();
+            InteractiveConsole();
+        }
+
+        /* TODO: Divert all Console.WriteLine calls.
+        private static void DetectConsole()
+        {
+            bool consoleOK = true;
+            try
+            {
+                Console.WriteLine();
+            }
+            catch
+            {
+                consoleOK = false;
+            }
+            if (consoleOK)
+            {
+                InteractiveConsole();
+            }
+            else
+            {
+                NoConsole();
+            }
+        }
+        */
+
+        private static void InteractiveConsole()
+        {
+            bool running = true;
+            while (running)
+            {
+                string line = Console.ReadLine().ToLower();
+                bool handled = false;
+                if (line == "q")
+                {
+                    handled = true;
+                    running = false;
+                    mainThread.Abort();
+                }
+                if (line == "p")
+                {
+                    handled = true;
+                    DatabaseDriver thisDriver = databaseDriver;
+                    if (thisDriver != null)
+                    {
+                        thisDriver.PrintServers();
+                    }
+                }
+                if (line == "r")
+                {
+                    handled = true;
+                    DatabaseClient thisClient = databaseClient;
+                    if (thisClient != null)
+                    {
+                        thisClient.Disconnect();
+                    }
+                }
+                if (line == "d")
+                {
+                    handled = true;
+                    string displayEndpoint = currentEndpoint;
+                    if (displayEndpoint != null)
+                    {
+                        Console.WriteLine("Currently connected to " + displayEndpoint);
+                    }
+                }
+                if (!handled)
+                {
+                    Console.WriteLine("Commands: q for quit, p for print server/relay tree, r for reconnect to the network, d to display the current remote endpoint");
+                }
+            }
+        }
+
+        private static void NoConsole()
+        {
+            while (true)
+            {
+                System.Threading.Thread.Sleep(1000);
+            }
         }
 
         public void Run()
@@ -36,6 +122,7 @@ namespace DMPDistributedDBBackend
                                 {
                                     newClient.EndConnect(ar);
                                     currentConnection = newClient;
+                                    currentEndpoint = connectionString;
                                     break;
                                 }
                                 else
@@ -68,10 +155,13 @@ namespace DMPDistributedDBBackend
                 {
                     Console.WriteLine("Connected!");
                     DatabaseConnection databaseConnection = new DatabaseConnection(backendSettings);
-                    DatabaseDriver databaseDriver = new DatabaseDriver(databaseConnection);
-                    DatabaseClient databaseClient = new DatabaseClient(currentConnection, databaseDriver);
+                    databaseDriver = new DatabaseDriver(databaseConnection);
+                    databaseClient = new DatabaseClient(currentConnection, databaseDriver);
                     databaseClient.Run();
                     Console.WriteLine("Disconnected! Reconnecting in 60 seconds...");
+                    databaseClient = null;
+                    databaseDriver = null;
+                    currentEndpoint = null;
                 }
                 Thread.Sleep(60000);
             }
