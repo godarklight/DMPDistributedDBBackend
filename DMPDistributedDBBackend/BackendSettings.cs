@@ -19,7 +19,7 @@ namespace DMPDistributedDBBackend
         {
             if (!File.Exists(fileName))
             {
-                reporters.Add("d-mp.org:9003");
+                reporters.Add("server.game.api.d-mp.org:9003");
                 reporters.Add("godarklight.info.tm:9003");
                 SaveToFile(fileName);
             }
