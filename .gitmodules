@@ -1,0 +1,6 @@
+[submodule "External/DarkNetwork"]
+	path = External/DarkNetwork
+	url = git@github.com:godarklight/DarkNetwork.git
+[submodule "External/MessageStream2"]
+	path = External/MessageStream2
+	url = git@github.com:godarklight/MessageStream2.git
